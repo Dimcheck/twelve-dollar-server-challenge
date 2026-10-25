@@ -7,7 +7,7 @@
 > The goal is to write a backend server on lower layer of abstraction in `Python` & squeeze the performance. As a side effect get better understanding how everything works under the hood. 
 
 ## TODO:
-* Realize the logic for `auth.py`, `db.py` & `endpoints.py`
+* Realize the logic for `auth.py` :white_check_mark:, `db.py` & `endpoints.py`
 * Test the server locally
 * Deploy to 12$ DigitalOcean server 
 * Measure the performance 
