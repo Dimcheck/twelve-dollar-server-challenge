@@ -49,6 +49,7 @@ class JWT:
             return base64.urlsafe_b64encode(orjson.dumps(payload)).rstrip(b"=").decode("ascii")
         except KeyError as e:
             print(f"{e} is missing")
+            raise KeyError
 
     @staticmethod
     def _create_signature(signing_input: bytes) -> str:

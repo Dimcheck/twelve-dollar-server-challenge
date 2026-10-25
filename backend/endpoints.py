@@ -34,4 +34,5 @@ async def create_post(request: Request) -> Response | ErrorResponse:
 # like a post (auth)
 @authenticate
 async def create_like(request: Request):
-    ...
+    print(request.state.__dict__)
+    return Response(content="Success", status_code=201)
