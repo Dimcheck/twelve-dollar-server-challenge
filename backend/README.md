@@ -22,3 +22,10 @@ Run server:
 ```bash
 uvicorn main:app
 ```
+Test authentication:
+```bash
+curl -X POST http://127.0.0.1:8000/posts \
+     -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NSIsInVzZXJuYW1lIjoiRGltY2hlY2siLCJpYXQiOjE3OTI5NTY0MDksImV4cCI6MTc5Mjk2MDAwOX0.Pww32JDCOmeRRkyE98VhoA6rTkXLOHBg-yNhiCmt7Rk" \
+     -H "Content-Type: application/json" \
+     -d '{"hello": "world"}'
+```
