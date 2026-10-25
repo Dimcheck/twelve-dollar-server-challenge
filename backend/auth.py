@@ -69,7 +69,7 @@ def authenticate(func: Callable) -> Callable:
 
         try:
             head_b64, payload_b64, sig_b64 = header[7:].split(".")
-            # remove padding from head_b64 before decoding
+            # add padding back to head_b64 before decoding
             head = orjson.loads(base64.urlsafe_b64decode(head_b64 + "=" * (-len(head_b64) % 4)))
             if not isinstance(head, dict) or head.get("alg") != "HS256":
                 raise ValueError("alg")
@@ -78,7 +78,7 @@ def authenticate(func: Callable) -> Callable:
             if not hmac.compare_digest(signature, sig_b64):
                 raise ValueError("signature")
 
-            # remove padding from payload_b64 before decoding
+            # add padding back to payload_b64 before decoding
             payload = orjson.loads(base64.urlsafe_b64decode(payload_b64 + "=" * (-len(payload_b64) % 4)))
             if not isinstance(payload, dict):
                 raise ValueError("payload")
