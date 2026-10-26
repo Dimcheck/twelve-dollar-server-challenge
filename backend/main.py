@@ -26,8 +26,8 @@ app = Starlette(
         Route('/health', get_health),
         Route('/feed', get_posts),
         Route('/posts', create_post, methods=("POST",)),
-        Route('/posts/:id', get_post),
-        Route('/posts/:id/like', create_like, methods=("POST",)),
+        Route('/posts/{id}', get_post),
+        Route('/posts/{id}/like', create_like, methods=("POST",)),
         Route('/', homepage),
     ]
 )
