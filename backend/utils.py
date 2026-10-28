@@ -28,10 +28,12 @@ def db_object(row: tuple) -> dict:
     return {"id": row[0], "body": row[1], "created_at": row[2], "author": row[3], "like_count": row[4]}
 
 
-def parse_id(path_param: str) -> int:
+def parse_id(path_param: str) -> int | None:
     if path_param.isdigit():
         if int(path_param) > MAX_ID:
-            raise ValueError("ID exceeds the DB limit")
-        return path_param
+            return None
+        elif int(path_param) == 0:
+            raise TypeError("invalid post id")
+        return int(path_param)
     else:
-        raise TypeError("Invalid ID")
+        raise TypeError("invalid post id")

@@ -1,11 +1,13 @@
 import json
+from time import monotonic
 
 from auth import authenticate
-from db import FEED, GET_BY_ID, INSERT, db
+from db import FEED, GET_BY_ID, INSERT, INSERT_LIKE, POST_EXISTS, db
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 from utils import ErrorResponse, FastRequest, db_object, parse_id
 
+WHITESPACE = "\t\n\v\f\r                  　﻿"
 
 async def homepage(request: Request) -> JSONResponse:
     return JSONResponse({'data': 'welcome'})
@@ -17,22 +19,31 @@ async def get_health(request: Request):
         db.execute("SELECT 1").fetchone()
     except Exception as e:
         return ErrorResponse(status_code=503, content={"status": "degraded", "db": "unreachable", "error": str(e)})
-    return JSONResponse(status_code=200, content={"status": "ok", "db": "ok"})
+    return JSONResponse(status_code=200, content={"status": "ok", "db": "ok", "uptime_s": int(monotonic() - request.state.up_time)})
 
 
 # get latest 20 posts
 async def get_posts(request: Request) -> JSONResponse:
     rows = db.execute(FEED).fetchall()
-    return JSONResponse(status_code=200, content={"posts": [db_object(row) for row in rows]})
+
+    try:
+        return JSONResponse(status_code=200, content={"posts": [db_object(row) for row in rows]})
+    except Exception as e:
+        return ErrorResponse(status_code=400, content={"error": str(e)})
 
 
 # get post by id
 async def get_post(request: Request):
     try:
-        row = db.execute(GET_BY_ID, (parse_id(request.path_params["id"]))).fetchone()
-    except Exception as e:
+        id = parse_id(request.path_params["id"])
+        row = db.execute(GET_BY_ID, (id,)).fetchone()
+
+        if not id or not row:
+            return ErrorResponse(status_code=404, content={"error": "post not found"})
+
+        return JSONResponse(status_code=200, content={"post": db_object(row)})
+    except TypeError as e:
         return ErrorResponse(status_code=400, content={"error": str(e)})
-    return JSONResponse(status_code=200, content={"post": db_object(row)})
 
 
 # create a post (auth)
@@ -40,19 +51,27 @@ async def get_post(request: Request):
 async def create_post(request: FastRequest) -> JSONResponse | ErrorResponse:
     try:
         body = await request.json()
-
         if isinstance(body.get("body"), int) or not body:
             return ErrorResponse(status_code=400, content={"error": "body is required"})
         elif not body.get("body").strip():
             return ErrorResponse(status_code=400, content={"error": "body is required"})
-        elif len(body["body"]) > 500:
+        elif len(body["body"].strip(WHITESPACE)) > 500:
             return ErrorResponse(status_code=400, content={"error": "body must be at most 500 characters"})
     except json.JSONDecodeError:
         return ErrorResponse(status_code=400, content={"error": "malformed JSON body"})
 
-    db.execute(INSERT, (request.state.user_id, body["body"]))
-    return JSONResponse(status_code=201, content=await request.json())
-
+    body = body["body"].strip(WHITESPACE)
+    post_id, created_at = db.execute(INSERT, (request.state.user_id, body)).fetchall()[0]
+    return JSONResponse(
+        status_code=201,
+        content={"post": {
+            "id": post_id,
+            "body": body,
+            "created_at": created_at,
+            "author": request.state.username,
+            "like_count": 0
+        }}
+    )
 
 # like a post (auth)
 @authenticate

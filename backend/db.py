@@ -22,3 +22,11 @@ SELECT p.id, p.body, p.created_at, u.username, (SELECT count(*) FROM likes l WHE
 GET_BY_ID = BASE_SELECT + """WHERE p.id = ?"""
 FEED = BASE_SELECT + " ORDER BY p.created_at DESC, p.id DESC LIMIT 20"
 INSERT = "INSERT INTO posts (user_id, body) VALUES (?, ?) RETURNING id, created_at"
+
+
+INSERT_LIKE = """
+INSERT INTO likes (user_id, post_id)
+SELECT ?1, ?2 WHERE EXISTS (SELECT 1 FROM posts WHERE id = ?2)
+ON CONFLICT (user_id, post_id) DO NOTHING
+"""
+POST_EXISTS = "SELECT 1 FROM posts WHERE id = ?"

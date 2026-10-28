@@ -65,7 +65,7 @@ def authenticate(func: Callable) -> Callable:
     async def wrapper(request: Request, *args, **kwargs) -> Coroutine:
         header = request.headers.get("authorization")
         if header is None or not header.startswith("Bearer "):
-            return ErrorResponse(status_code=401, content="missing bearer token")
+            return ErrorResponse(status_code=401, content={"error": "missing bearer token"})
 
         try:
             head_b64, payload_b64, sig_b64 = header[7:].split(".")
@@ -91,13 +91,13 @@ def authenticate(func: Callable) -> Callable:
                 # raise ValueError("nbf")
         except (ValueError, UnicodeError) as e:  # includes orjson.JSONDecodeError and binascii.Error
             print(e.__dict__)
-            return ErrorResponse(status_code=401, content="invalid or expired token")
+            return ErrorResponse(status_code=401, content={"error": "invalid or expired token"})
         sub = payload.get("sub")
         username = payload.get("username")
-        user_id = int(sub) if isinstance(sub, str) else None
+        user_id = int(sub) if isinstance(sub, str) and sub.isdigit() else None
 
         if user_id is None or user_id > MAX_ID or not isinstance(username, str):
-            return ErrorResponse(status_code=401, content="invalid token payload")
+            return ErrorResponse(status_code=401, content={"error": "invalid token payload"})
 
         # Attach authenticated user info to request for the endpoint function
         request.state.user_id = user_id
