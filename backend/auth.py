@@ -1,23 +1,18 @@
 import base64
 import hashlib
 import hmac
-import os
 from collections.abc import Callable, Coroutine
 from functools import cached_property, wraps
 from time import time
 
 import orjson
+from consts import JWT_SECRET, MAX_ID
 from starlette.requests import Request
 from utils import ErrorResponse
-
-MAX_ID = 2**63 - 1  # SQLite's INTEGER range; larger ids cannot exist
-JWT_SECRET = os.environ["JWT_SECRET"].encode()
 
 
 class JWT:
     """
-    JWT typically looks like the following:
-        xxxxx.yyyyy.zzzzz
     Header
         The header typically consists of two parts: the type of the token, which is JWT, and the signing algorithm being used, such as HMAC SHA256 or RSA.
     Payload

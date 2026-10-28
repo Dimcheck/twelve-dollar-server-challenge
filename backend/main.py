@@ -16,13 +16,6 @@ exception_handlers = {404: not_found}
 
 @asynccontextmanager
 async def lifespan(app):
-    """
-    Handle db connections
-    Reuse 1 asynchronous HTTP client to communicate with External APIs
-    Reuse 1 the ProcessPool to handle CPU heavy work
-    ------------------------------------------------------------------
-    https://starlette.dev/lifespan/
-    """
     print("Startup")
     yield {"up_time": monotonic()}
     print("Shutdown")

@@ -5,24 +5,14 @@ I'll use `Starlatte` as my main framework. In theory this should be enough to ha
 If smth will be needed, I'll try to integrate the solution by myself. 
 As a result I'll get deeper understanding how many high-level abstraction objects work(`Pydantic`, `pyjwt`, etc)
 
-## Backend Setup
-To create a python env run this command in `backend` dir:
-```bash
-python -m venv venv
-```
-To activate an env run:
-```bash
-source vevn/bin/activate
-```
-Install all deps:
-```bash
-pip install -r requirements.txt
-```
+## Setup
 Run server from `backend` dir:
 ```bash
-uvicorn main:app
+./run-server.sh
 ```
 Run tests from `backend` dir:
 ```bash
-pytest
+./run-tests.sh
 ```
+
+>> You might need to run >> ```chmod +x path_to_bashscript```

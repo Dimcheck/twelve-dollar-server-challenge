@@ -1,7 +1,7 @@
 from typing import Any
 
 import orjson
-from db import MAX_ID
+from consts import MAX_ID
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 

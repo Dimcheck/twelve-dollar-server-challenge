@@ -1,10 +1,6 @@
-import os
 import sqlite3
 
-SQLITE_PATH = os.environ["SQLITE_PATH"]
-# Prepare raw SQL queries & db instanse...
-MAX_ID = 2**63 - 1  # SQLite's INTEGER range; larger ids cannot exist
-
+from consts import SQLITE_PATH
 
 db = sqlite3.connect(SQLITE_PATH, isolation_level=None, check_same_thread=False, cached_statements=32)
 db.execute("PRAGMA journal_mode = WAL")

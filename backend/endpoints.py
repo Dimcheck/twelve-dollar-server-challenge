@@ -2,12 +2,12 @@ import json
 from time import monotonic
 
 from auth import authenticate
+from consts import WHITESPACE
 from db import FEED, GET_BY_ID, INSERT, INSERT_LIKE, POST_EXISTS, db
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 from utils import ErrorResponse, FastRequest, db_object, parse_id
 
-WHITESPACE = "\t\n\v\f\r                  　﻿"
 
 async def homepage(request: Request) -> JSONResponse:
     return JSONResponse({'data': 'welcome'})

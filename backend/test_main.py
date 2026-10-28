@@ -3,8 +3,7 @@ from unittest.mock import patch
 
 import orjson
 import pytest
-
-from backend.auth import JWT
+from auth import JWT
 
 
 class TestJWTCreation:
@@ -83,7 +82,7 @@ class TestJWTPayload:
     
     def test_payload_contains_iat(self):
         """Test that payload contains issued at timestamp"""
-        with patch("backend.auth.time", return_value=1234567890):
+        with patch("auth.time", return_value=1234567890):
             token = JWT(sub="12345", username="testuser")
         
         parts = token.token.split(".")
@@ -94,7 +93,7 @@ class TestJWTPayload:
     
     def test_payload_contains_exp(self):
         """Test that payload contains expiration timestamp"""
-        with patch("backend.auth.time", return_value=1234567890):
+        with patch("auth.time", return_value=1234567890):
             token = JWT(sub="12345", username="testuser")
         
         parts = token.token.split(".")
@@ -105,7 +104,7 @@ class TestJWTPayload:
     
     def test_exp_is_one_hour_after_iat(self):
         """Test that expiration is exactly 1 hour after issued at"""
-        with patch("backend.auth.time", return_value=1234567890):
+        with patch("auth.time", return_value=1234567890):
             token = JWT(sub="12345", username="testuser")
 
         parts = token.token.split(".")
@@ -198,10 +197,10 @@ class TestJWTEdgeCases:
     
     def test_token_uniqueness(self):
         """Test that different tokens are generated for same user at different times"""
-        with patch("backend.auth.time", return_value=1000000000):
+        with patch("auth.time", return_value=1000000000):
             token1 = JWT(sub="12345", username="testuser")
         
-        with patch("backend.auth.time", return_value=2000000000):
+        with patch("auth.time", return_value=2000000000):
             token2 = JWT(sub="12345", username="testuser")
         
         # Tokens should be different due to different timestamps
