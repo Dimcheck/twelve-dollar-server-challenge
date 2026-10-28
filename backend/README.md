@@ -15,4 +15,4 @@ Run tests from `backend` dir:
 ./run-tests.sh
 ```
 
->> You might need to run >> ```chmod +x path_to_bashscript```
+> You might need to run >> ```chmod +x path_to_bashscript```
