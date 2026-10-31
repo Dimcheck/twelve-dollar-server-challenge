@@ -10,7 +10,7 @@
 #
 # Needs: curl, jq, openssl. JWT_SECRET defaults to the challenge secret.
 set -uo pipefail
-BASE="${1:-http://127.0.0.1:3000}"
+BASE="${1:-http://127.0.0.1:8000}"
 GOLDEN="$(cd "$(dirname "$0")" && pwd)/golden"
 JWT_SECRET="${JWT_SECRET:-twelve-dollar-challenge}"
 USER_ID=1; USER_NAME=golden_ember_1          # user 1 in the seed

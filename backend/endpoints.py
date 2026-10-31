@@ -3,7 +3,15 @@ from time import monotonic
 
 from auth import authenticate
 from consts import WHITESPACE
-from db import FEED, GET_BY_ID, INSERT, INSERT_LIKE, POST_EXISTS, db
+from db import (
+    FEED,
+    GET_BY_ID,
+    INSERT_LIKE,
+    INSERT_POST,
+    LIKE_EXISTS,
+    POST_EXISTS,
+    db,
+)
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 from utils import ErrorResponse, FastRequest, db_object, parse_id
@@ -24,9 +32,8 @@ async def get_health(request: Request):
 
 # get latest 20 posts
 async def get_posts(request: Request) -> JSONResponse:
-    rows = db.execute(FEED).fetchall()
-
     try:
+        rows = db.execute(FEED).fetchall()
         return JSONResponse(status_code=200, content={"posts": [db_object(row) for row in rows]})
     except Exception as e:
         return ErrorResponse(status_code=400, content={"error": str(e)})
@@ -46,7 +53,7 @@ async def get_post(request: Request):
         return ErrorResponse(status_code=400, content={"error": str(e)})
 
 
-# create a post (auth)
+# create a post
 @authenticate
 async def create_post(request: FastRequest) -> JSONResponse | ErrorResponse:
     try:
@@ -61,7 +68,7 @@ async def create_post(request: FastRequest) -> JSONResponse | ErrorResponse:
         return ErrorResponse(status_code=400, content={"error": "malformed JSON body"})
 
     body = body["body"].strip(WHITESPACE)
-    post_id, created_at = db.execute(INSERT, (request.state.user_id, body)).fetchall()[0]
+    post_id, created_at = db.execute(INSERT_POST, (request.state.user_id, body)).fetchall()[0]
     return JSONResponse(
         status_code=201,
         content={"post": {
@@ -73,8 +80,25 @@ async def create_post(request: FastRequest) -> JSONResponse | ErrorResponse:
         }}
     )
 
-# like a post (auth)
+
+# like a post
 @authenticate
 async def create_like(request: Request) -> JSONResponse:
-    print(request.state.__dict__)
-    return JSONResponse(status_code=201, content="Success")
+    try:
+        post_id = parse_id(request.path_params["id"])
+    except TypeError as e:
+        return ErrorResponse(status_code=400, content={"error": str(e)})
+
+    user_id = request.state["user_id"]
+    post = db.execute(POST_EXISTS, (post_id,)).fetchone()
+    like = db.execute(LIKE_EXISTS, (user_id, post_id)).fetchone()
+
+    if post and not like:
+        db.execute(INSERT_LIKE, (user_id, post_id))
+        return JSONResponse(status_code=201, content={"liked": True, "already_liked": False, "post_id": post_id})
+
+    if post and like:
+        return JSONResponse(status_code=200, content={"liked": True, "already_liked": True, "post_id": post_id})
+
+    if not post:
+        return ErrorResponse(status_code=404, content={"error": "post not found"})
