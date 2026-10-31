@@ -9,8 +9,8 @@
 ## TODO:
 * Realize the logic for `auth.py`, `db.py` & `endpoints.py` :white_check_mark:
 * Test the server locally :white_check_mark:
-* Deploy to 12$ DigitalOcean server 
-* Measure the performance 
+* Deploy to 12$ DigitalOcean server :white_check_mark:
+* Measure the performance :construction: 
 * Return with measured results
 
 ## Mission: 
@@ -70,37 +70,6 @@ k6 run -e VUS=1000 bench/load.js                # optional: load test your serve
    and don't ship prebuilt binaries. It must come up healthy within 60 seconds of `start.sh`.
 11. Nothing on the box gets tuned for you: no kernel parameters, and no pinning of CPU or other processes.
     Settings inside your own process (GC, thread counts, allocator, pragmas allowed by rule 6) are fair game.
-
-## Submitting
-
-Open a pull request that adds one folder, `submissions/<language>-<framework>-<github-username>/`, containing:
-
-| File | What it does |
-|---|---|
-| `install.sh` | Run once as root on a clean Ubuntu 24.04: installs your toolchain/runtime (apt, official tarballs) |
-| `build.sh` | Builds your app as a normal user (may download pinned dependencies) |
-| `start.sh` | Runs the server **in the foreground**, configured only by the env vars in SPEC.md |
-| `README.md` | Language, framework, driver and versions; **Nginx or direct**; the optimizations you made and why |
-| your code | Source only: don't commit build output (`bin/`, `target/`, `node_modules/`, …). Add a `.gitignore` |
-
-For example, the three scripts for a Go server:
-
-```bash
-# install.sh: runs once as root on a clean Ubuntu 24.04
-set -euo pipefail
-apt-get update && apt-get install -y build-essential curl
-curl -fsSL https://go.dev/dl/go1.27.1.linux-amd64.tar.gz | tar -C /usr/local -xz
-
-# build.sh: runs as a normal user
-set -euo pipefail
-cd "$(dirname "$0")" && /usr/local/go/bin/go build -o bin/server .
-
-# start.sh: runs the server in the foreground
-exec "$(dirname "$0")/bin/server"
-```
-
-CI runs `install.sh` and `test/run.sh` on every pull request, and it must be green. Don't touch files outside your folder.
-By submitting, you license your code under the repo's [MIT license](LICENSE).
 
 ## Scoring
 

@@ -16,3 +16,12 @@ Run tests from `backend` dir:
 ```
 
 > You might need to run >> ```chmod +x path_to_bashscript```
+
+## Stress Test
+On LOCAL machine, in the project directory:
+```bash
+k6 run \
+  -e BASE_URL=SERVER_IP:PORT \
+  -e VUS=100 \
+  bench/load.js
+```
