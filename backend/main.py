@@ -4,15 +4,8 @@ from time import monotonic
 from endpoints import *
 from starlette.applications import Starlette
 from starlette.exceptions import HTTPException
-from starlette.responses import JSONResponse
+from starlette.middleware.exceptions import ExceptionMiddleware
 from starlette.routing import Route
-
-
-async def not_found(request: Request, exc: HTTPException):
-    """Custom response when user accesses non existent page"""
-    return JSONResponse(content={"error": "not found"}, status_code=exc.status_code)
-
-exception_handlers = {404: not_found}
 
 
 @asynccontextmanager
@@ -25,7 +18,6 @@ async def lifespan(app):
 app = Starlette(
     debug=True,
     lifespan=lifespan,
-    exception_handlers=exception_handlers,
     routes=[
         Route('/health', get_health),
         Route('/feed', get_posts),
@@ -36,3 +28,18 @@ app = Starlette(
     ],
 )
 
+
+async def not_found(request: Request, exc: HTTPException):
+    """Custom response when user accesses non existent page"""
+    return ErrorResponse(content={"error": "not found"}, status_code=exc.status_code)
+
+
+exception_handlers = {404: not_found}
+
+
+def slim_middleware_stack():
+    """Custom middleware stack for faster request/response processing"""
+    return ExceptionMiddleware(app.router, handlers=exception_handlers)
+
+
+app.build_middleware_stack = slim_middleware_stack
