@@ -6,19 +6,9 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse
 
 
-class ErrorResponse(JSONResponse):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if self.status_code < 400:
-            raise ValueError("Response is not an error")
-
-    def __str__(self):
-        return f"{self.__dict__}"
-
-
 class FastRequest(Request):
     async def json(self) -> Any:
-        if not hasattr(self, "_json"):  # pragma: no branch
+        if not hasattr(self, "_json"):
             body = await self.body()
             self._json = orjson.loads(body)
         return self._json
@@ -27,6 +17,16 @@ class FastRequest(Request):
 class FastResponse(JSONResponse):
     def render(self, content: Any) -> bytes:
         return orjson.dumps(content)
+
+
+class ErrorResponse(FastResponse):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.status_code < 400:
+            raise ValueError("Response is not an error")
+
+    def __str__(self):
+        return f"{self.__dict__}"
 
 
 def db_object(row: tuple) -> dict:
