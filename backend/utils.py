@@ -24,6 +24,11 @@ class FastRequest(Request):
         return self._json
 
 
+class FastResponse(JSONResponse):
+    def render(self, content: Any) -> bytes:
+        return orjson.dumps(content)
+
+
 def db_object(row: tuple) -> dict:
     return {"id": row[0], "body": row[1], "created_at": row[2], "author": row[3], "like_count": row[4]}
 

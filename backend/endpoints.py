@@ -13,12 +13,11 @@ from db import (
     db,
 )
 from starlette.requests import Request
-from starlette.responses import JSONResponse
-from utils import ErrorResponse, FastRequest, db_object, parse_id
+from utils import ErrorResponse, FastRequest, FastResponse, db_object, parse_id
 
 
-async def homepage(request: Request) -> JSONResponse:
-    return JSONResponse({'data': 'welcome'})
+async def homepage(request: Request) -> FastResponse:
+    return FastResponse({'data': 'welcome'})
 
 
 async def get_health(request: Request):
@@ -27,14 +26,14 @@ async def get_health(request: Request):
         db.execute("SELECT 1").fetchone()
     except Exception as e:
         return ErrorResponse(status_code=503, content={"status": "degraded", "db": "unreachable", "error": str(e)})
-    return JSONResponse(status_code=200, content={"status": "ok", "db": "ok", "uptime_s": int(monotonic() - request.state.up_time)})
+    return FastResponse(status_code=200, content={"status": "ok", "db": "ok", "uptime_s": int(monotonic() - request.state.up_time)})
 
 
-async def get_posts(request: Request) -> JSONResponse:
+async def get_posts(request: Request) -> FastResponse:
     """get latest 20 posts"""
     try:
         posts = db.execute(FEED).fetchall()
-        return JSONResponse(status_code=200, content={"posts": [db_object(post) for post in posts]})
+        return FastResponse(status_code=200, content={"posts": [db_object(post) for post in posts]})
     except Exception as e:
         return ErrorResponse(status_code=400, content={"error": str(e)})
 
@@ -48,13 +47,13 @@ async def get_post(request: Request):
         if not post_id or not post:
             return ErrorResponse(status_code=404, content={"error": "post not found"})
 
-        return JSONResponse(status_code=200, content={"post": db_object(post)})
+        return FastResponse(status_code=200, content={"post": db_object(post)})
     except TypeError as e:
         return ErrorResponse(status_code=400, content={"error": str(e)})
 
 
 @authenticate
-async def create_post(request: FastRequest) -> JSONResponse | ErrorResponse:
+async def create_post(request: FastRequest) -> FastResponse | ErrorResponse:
     """create a post"""
     try:
         body = await request.json()
@@ -69,7 +68,7 @@ async def create_post(request: FastRequest) -> JSONResponse | ErrorResponse:
 
     body = body["body"].strip(WHITESPACE)
     post_id, created_at = db.execute(INSERT_POST, (request.state.user_id, body)).fetchall()[0]
-    return JSONResponse(
+    return FastResponse(
         status_code=201,
         content={"post": {
             "id": post_id,
@@ -82,7 +81,7 @@ async def create_post(request: FastRequest) -> JSONResponse | ErrorResponse:
 
 
 @authenticate
-async def create_like(request: Request) -> JSONResponse:
+async def create_like(request: Request) -> FastResponse:
     """like a post"""
     try:
         post_id = parse_id(request.path_params["id"])
@@ -95,10 +94,10 @@ async def create_like(request: Request) -> JSONResponse:
 
     if post and not like:
         db.execute(INSERT_LIKE, (user_id, post_id))
-        return JSONResponse(status_code=201, content={"liked": True, "already_liked": False, "post_id": post_id})
+        return FastResponse(status_code=201, content={"liked": True, "already_liked": False, "post_id": post_id})
 
     if post and like:
-        return JSONResponse(status_code=200, content={"liked": True, "already_liked": True, "post_id": post_id})
+        return FastResponse(status_code=200, content={"liked": True, "already_liked": True, "post_id": post_id})
 
     if not post:
         return ErrorResponse(status_code=404, content={"error": "post not found"})

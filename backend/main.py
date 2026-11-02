@@ -4,6 +4,7 @@ from time import monotonic
 from endpoints import *
 from starlette.applications import Starlette
 from starlette.exceptions import HTTPException
+from starlette.responses import JSONResponse
 from starlette.routing import Route
 
 
