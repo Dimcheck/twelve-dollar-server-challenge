@@ -43,7 +43,7 @@ async def get_post(request: Request):
     """get post by id"""
     try:
         post_id = parse_id(request.path_params["id"])
-        post = db.execute(GET_BY_ID, (id,)).fetchone()
+        post = db.execute(GET_BY_ID, (post_id,)).fetchone()
 
         if not post_id or not post:
             return ErrorResponse(status_code=404, content={"error": "post not found"})
