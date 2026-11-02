@@ -81,12 +81,10 @@ def authenticate(func: Callable) -> Callable:
             exp = payload.get("exp")
             if exp is not None and (not isinstance(exp, (int, float)) or isinstance(exp, bool) or now >= exp):
                 raise ValueError("exp")
-            # nbf = payload.get("nbf")
-            # if nbf is not None and (not isinstance(nbf, (int, float)) or isinstance(nbf, bool) or now < nbf):
-                # raise ValueError("nbf")
+
         except (ValueError, UnicodeError) as e:  # includes orjson.JSONDecodeError and binascii.Error
-            print(e.__dict__)
             return ErrorResponse(status_code=401, content={"error": "invalid or expired token"})
+
         sub = payload.get("sub")
         username = payload.get("username")
         user_id = int(sub) if isinstance(sub, str) and sub.isdigit() else None

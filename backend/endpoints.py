@@ -21,8 +21,8 @@ async def homepage(request: Request) -> JSONResponse:
     return JSONResponse({'data': 'welcome'})
 
 
-# health check
 async def get_health(request: Request):
+    """health check"""
     try:
         db.execute("SELECT 1").fetchone()
     except Exception as e:
@@ -30,32 +30,32 @@ async def get_health(request: Request):
     return JSONResponse(status_code=200, content={"status": "ok", "db": "ok", "uptime_s": int(monotonic() - request.state.up_time)})
 
 
-# get latest 20 posts
 async def get_posts(request: Request) -> JSONResponse:
+    """get latest 20 posts"""
     try:
-        rows = db.execute(FEED).fetchall()
-        return JSONResponse(status_code=200, content={"posts": [db_object(row) for row in rows]})
+        posts = db.execute(FEED).fetchall()
+        return JSONResponse(status_code=200, content={"posts": [db_object(post) for post in posts]})
     except Exception as e:
         return ErrorResponse(status_code=400, content={"error": str(e)})
 
 
-# get post by id
 async def get_post(request: Request):
+    """get post by id"""
     try:
-        id = parse_id(request.path_params["id"])
-        row = db.execute(GET_BY_ID, (id,)).fetchone()
+        post_id = parse_id(request.path_params["id"])
+        post = db.execute(GET_BY_ID, (id,)).fetchone()
 
-        if not id or not row:
+        if not post_id or not post:
             return ErrorResponse(status_code=404, content={"error": "post not found"})
 
-        return JSONResponse(status_code=200, content={"post": db_object(row)})
+        return JSONResponse(status_code=200, content={"post": db_object(post)})
     except TypeError as e:
         return ErrorResponse(status_code=400, content={"error": str(e)})
 
 
-# create a post
 @authenticate
 async def create_post(request: FastRequest) -> JSONResponse | ErrorResponse:
+    """create a post"""
     try:
         body = await request.json()
         if isinstance(body.get("body"), int) or not body:
@@ -81,9 +81,9 @@ async def create_post(request: FastRequest) -> JSONResponse | ErrorResponse:
     )
 
 
-# like a post
 @authenticate
 async def create_like(request: Request) -> JSONResponse:
+    """like a post"""
     try:
         post_id = parse_id(request.path_params["id"])
     except TypeError as e:

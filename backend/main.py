@@ -7,8 +7,8 @@ from starlette.exceptions import HTTPException
 from starlette.routing import Route
 
 
-# Custom response when user accesses non existent page
 async def not_found(request: Request, exc: HTTPException):
+    """Custom response when user accesses non existent page"""
     return JSONResponse(content={"error": "not found"}, status_code=exc.status_code)
 
 exception_handlers = {404: not_found}
@@ -34,3 +34,4 @@ app = Starlette(
         Route('/', homepage),
     ],
 )
+
